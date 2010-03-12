@@ -4,15 +4,12 @@ LDFLAGS	=	-lrrd_th
 
 #`pkg-config --libs --cflags gtk+-2.0 libglade-2.0`
 
-default: memory
+default: cimon
 
-memory:memory.o\
-	log.o\
-	rrd.o\
-	
+cimon: cimon.o memory.o cpu.o net.o log.o rrd.o
 
 %.o : %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f memory *.o
+	rm -f cimon *.o

@@ -14,6 +14,6 @@ typedef enum {
 
 #define WARNING(msg, ...) mlog (msg, __VA_ARGS__)
 
-#endif
-
 void mlog (char *msg, ...);
+
+#endif

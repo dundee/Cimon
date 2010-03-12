@@ -28,23 +28,18 @@ void memory_create_rrd(char * datadir)
 void memory_update_rrd(char * datadir)
 {
 	memory_info_t memory;
-	char * params[1];
 	char tmp[100];
-	char * arr[1];
-	char * buff;
+	char * buff[1];
 	
 	memory = memory_get_values();
 
-	sprintf(tmp, "N:%d:%d:%d:%d:%d#\n", memory.used/1000, memory.cached/1000, memory.buffers/1000, memory.free/1000, memory.total/1000);
+	sprintf(tmp, "N:%d:%d:%d:%d:%d", memory.used/1000, memory.cached/1000, memory.buffers/1000, memory.free/1000, memory.total/1000);
 
-	arr[0] = tmp;
-	buff = strsep(arr, "#");
+	buff[0] = strdup(tmp);
 
-	DEBUG("%s\n", buff);
-	
-	params[0] = buff;
+	DEBUG("memory: %s\n", buff[0]);
 
-	rrd_update_db(datadir, "memory.rrd", 1, params);
+	rrd_update_db(datadir, "memory.rrd", 1, buff);
 }
 
 void memory_create_graph(char * datadir)
@@ -116,11 +111,6 @@ memory_info_t memory_get_values()
 	FILE *fp;
 	memory_info_t memory;
 
-	char tmp[100];
-	char * buff;
-	char * params[3];
-	char * arr[1];
-
 	fp = fopen("/proc/meminfo", "r");
 
 	if (fp == NULL) {
@@ -144,12 +134,4 @@ memory_info_t memory_get_values()
 	DEBUG("memory: total %d\n", memory.used);
 
 	return memory;
-}
-
-int main()
-{
-	/*memory_create_rrd(".");*/
-	memory_update_rrd(".");
-	memory_create_graph(".");
-	return 0;
 }
