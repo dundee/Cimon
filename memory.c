@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "rrd.h"
 #include "memory.h"
@@ -31,6 +29,8 @@ void memory_update_rrd(char * datadir)
 	char tmp[100];
 	char * buff[1];
 	
+	if (!rrd_db_exists(datadir, "memory.rrd")) memory_create_rrd(datadir);
+	
 	memory = memory_get_values();
 
 	sprintf(tmp, "N:%d:%d:%d:%d:%d", memory.used/1000, memory.cached/1000, memory.buffers/1000, memory.free/1000, memory.total/1000);
@@ -40,6 +40,7 @@ void memory_update_rrd(char * datadir)
 	DEBUG("memory: %s\n", buff[0]);
 
 	rrd_update_db(datadir, "memory.rrd", 1, buff);
+	free(buff[0]);
 }
 
 void memory_create_graph(char * datadir)
@@ -103,6 +104,7 @@ void memory_create_graph(char * datadir)
 		"GPRINT:totalmax:%7.2lfM",
 		"GPRINT:totalmin:%7.2lfM"
 	};
+	if (!rrd_db_exists(datadir, "memory.rrd")) memory_create_rrd(datadir);
 	rrd_create_graph(sizeof(params) / sizeof(char *), params);
 }
 

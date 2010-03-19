@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "rrd.h"
 #include "cpu.h"
@@ -30,6 +28,8 @@ void cpu_update_rrd(char * datadir)
 	cpu_info_t cpu;
 	char * buff[1];
 	char tmp[100];
+	
+	if (!rrd_db_exists(datadir, "cpu.rrd")) cpu_create_rrd(datadir);
 
 	cpu = cpu_get_values();
 	sprintf(tmp, "N:%f:%d:%d:%d", cpu.load, cpu.user, cpu.nice, cpu.system);
@@ -38,6 +38,7 @@ void cpu_update_rrd(char * datadir)
 	DEBUG("cpu: %s\n", buff[0]);
 
 	rrd_update_db(datadir, "cpu.rrd", 1, buff);
+	free(buff[0]);
 }
 
 void cpu_create_graph(char * datadir)
@@ -84,6 +85,7 @@ void cpu_create_graph(char * datadir)
 		"GPRINT:cpu:MAX:CPU usage maximum\\: %2.2lf%%",
 		"GPRINT:cpu:AVERAGE:CPU usage average\\: %2.2lf%%"
 	};
+	if (!rrd_db_exists(datadir, "cpu.rrd")) cpu_create_rrd(datadir);
 	rrd_create_graph(sizeof(params) / sizeof(char *), params);
 }
 

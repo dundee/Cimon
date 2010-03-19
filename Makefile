@@ -1,15 +1,19 @@
 CC		=	gcc
-CFLAGS	=	-Wall -pedantic -g
+CFLAGS	=	-Wall -pedantic -g -std=gnu99
 LDFLAGS	=	-lrrd_th
 
 #`pkg-config --libs --cflags gtk+-2.0 libglade-2.0`
 
-default: cimon
+default: cimond cimon-graph cimon-web
 
-cimon: cimon.o memory.o cpu.o net.o log.o rrd.o
+cimond: cimond.o memory.o cpu.o net.o log.o rrd.o
+
+cimon-graph: cimon-graph.o memory.o cpu.o net.o log.o rrd.o
+
+cimon-web: cimon-web.o memory.o cpu.o net.o log.o rrd.o
 
 %.o : %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f cimon *.o
+	rm -f cimond *.o

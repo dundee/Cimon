@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <rrd.h>
+#include <stdlib.h>
 
 #include "log.h"
 
@@ -30,6 +31,8 @@ int rrd_create_db(char *dir, char * name, int argc, const char *argv[])
 	if (status != 0) WARNING ("rrd_create (%s) returned status %i.\n", filename, status);
 	else DEBUG ("Successfully created RRD file \"%s\".\n", filename);
 	
+	free(filename);
+	
 	return status;
 }
 
@@ -44,6 +47,8 @@ int rrd_update_db(char * dir, char * name, int argc, char * argv[])
 	if (status != 0) WARNING ("rrd_update (%s) returned status %i.\n", filename, status);
 	else DEBUG ("Successfully updated RRD file \"%s\".\n", filename);
 	
+	free(filename);
+	
 	return status;
 }
 
@@ -52,4 +57,23 @@ int rrd_create_graph(int argc, char * argv[])
 	rrd_graph_v(argc, argv);
 	
 	return 1;
+}
+
+int rrd_db_exists(char *dir, char *name)
+{
+    FILE * file;
+    char *filename;
+    
+    filename = compose_filename(dir, name);
+    
+    if ((file = fopen(filename, "r")) != 0)
+    {
+        fclose(file);
+        free(filename);
+        return 1;
+    }
+    
+    free(filename);
+    
+    return 0;
 }

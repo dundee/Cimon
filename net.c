@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "rrd.h"
 #include "net.h"
@@ -27,6 +25,8 @@ void net_update_rrd(char * datadir)
 	char * buff[1];
 	char tmp[100];
 
+	if (!rrd_db_exists(datadir, "net.rrd")) net_create_rrd(datadir);
+
 	net = net_get_values();
 	sprintf(tmp, "N:%d:%d", net.download, net.upload);
 	buff[0] = strdup(tmp);
@@ -34,6 +34,7 @@ void net_update_rrd(char * datadir)
 	DEBUG("net: %s\n", buff[0]);
 
 	rrd_update_db(datadir, "net.rrd", 1, buff);
+	free(buff[0]);
 }
 
 void net_create_graph(char * datadir)
@@ -57,6 +58,7 @@ void net_create_graph(char * datadir)
 		"LINE:upload#00F:Upload",
 		"GPRINT:upload:MAX:Max upload\\: %2.2lf bytes/sec",
 	};
+	if (!rrd_db_exists(datadir, "net.rrd")) net_create_rrd(datadir);
 	rrd_create_graph(sizeof(params) / sizeof(char *), params);
 }
 
