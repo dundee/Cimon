@@ -1,12 +1,84 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <signal.h>
 
 #define DEBUG_MODE 1
-
 #include "log.h"
+
+#define BUFF_SIZE 1024
+
+int server_sock;
+int client_sock;
+
+static void response_index(int sock)
+{
+	char response[] = "HTTP/1.1 200 OK\n"
+	                  "Server: cimon/0.0.1\n"
+	                  "Content-Type: text/html; charset=UTF-8\n"
+	                  "Connection: close\n"
+	                  "\n";
+	
+	send(sock, response, strlen(response), 0);
+	send(sock, "hello\n", 6, 0);
+	DEBUG("%s", response);
+}
+
+static void response_404(int sock)
+{
+	char response[] = "HTTP/1.1 404 Not Found\n"
+	                  "Server: cimon/0.0.1\n"
+	                  "Content-Type: text/html; charset=UTF-8\n"
+	                  "Connection: close\n"
+	                  "\n\n";
+	send(sock, response, strlen(response), 0);
+	DEBUG("%s", response);
+}
+
+static void handle_request(int client_sock)
+{
+	char *buff;
+	char request[255];
+	
+	buff = (char *) malloc(BUFF_SIZE * sizeof(char));
+	memset(buff, 0, BUFF_SIZE);
+	
+	while (recv(client_sock, buff, BUFF_SIZE, 0) > 0) {
+		DEBUG("%s", buff);
+		if (strstr(buff, "GET ") != NULL) {
+			sscanf(buff, "GET %254s HTTP/1", request);
+			DEBUG("Request is: %s\n", request);
+		}
+		if (strstr(buff, "\n\n") != NULL 
+		    || strstr(buff, "\n\r\n") != NULL) break;
+		if (buff[0] == '\n' || buff[0] == '\r') break;
+		
+		memset(buff, 0, BUFF_SIZE);
+	}
+	
+	if (!strcmp(request, "/")) {
+		DEBUG("Sending page: %s\n", request);
+		response_index(client_sock);
+	} else {
+		DEBUG("Request unknown: %s\n", request);
+		response_404(client_sock);
+	}
+}
+
+void close_sockets()
+{
+	DEBUG("%s\n", "Closing sockets");
+	
+	shutdown(client_sock, SHUT_RDWR);
+	close(client_sock);
+	
+	shutdown(server_sock, SHUT_RDWR);
+	close(server_sock);
+}
 
 int main(int argc, char** argv)
 {
@@ -16,6 +88,15 @@ int main(int argc, char** argv)
 	int server_sock;
 	int client_sock;
 	unsigned int client_addr_size;
+	int on = 1;
+	
+	struct sigaction action;
+	action.sa_flags = 0;
+	sigemptyset(&action.sa_mask);
+	action.sa_handler = close_sockets;
+	sigaction(SIGINT,  &action, NULL);
+	sigaction(SIGTERM, &action, NULL);
+	atexit(close_sockets);
 	
 	if (argc >= 2) sscanf(argv[1], "%u", &port);
 	else port = 80;
@@ -23,6 +104,7 @@ int main(int argc, char** argv)
 	server_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); /* TCP */
 	if (server_sock < 0) {
 		WARNING("Can not open socket for port %d\n", port);
+		return 1;
 	}
 	
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -31,23 +113,33 @@ int main(int argc, char** argv)
 	
 	if (bind(server_sock, (const struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
 		WARNING("Can not bind to port %d\n", port);
+		return 1;
 	}
 	DEBUG("Binded to port %d\n", port);
+	
+	if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on)) < 0) {
+		WARNING("Can not setsockopt REUSEADDR to value %d\n", on);
+	}
 
 	if (listen(server_sock, 0) < 0) {
 		WARNING("Can not listen on port %d\n", port);
+		return 1;
 	}
 	DEBUG("Listening on port %d\n", port);
 	
 	client_addr_size = sizeof(client_addr);
 	while(1) {
 		client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addr_size);
-		if (client_sock < 0) WARNING("Can not accept connection on port %d\n", port);
+		if (client_sock < 0) {
+			WARNING("Can not accept connection on port %d\n", port);
+			return 1;
+		}
 		DEBUG("Accepted connection on port %d\n", port);
 		
+		handle_request(client_sock);
+		close(client_sock);
 	}
 	
-	shutdown(server_sock, SHUT_RDWR);
-	close(server_sock);
+	close_sockets();
 	return 0;
 }
