@@ -7,25 +7,33 @@
 #include <unistd.h>
 #include <signal.h>
 
-#define DEBUG_MODE 1
+/* #define DEBUG_MODE 1 */
+
 #include "log.h"
+#include "render-index.h"
 
 #define BUFF_SIZE 1024
 
 int server_sock;
 int client_sock;
 
-static void response_index(int sock)
+static void response_page(int sock, char * (*content_renderer)())
 {
-	char response[] = "HTTP/1.1 200 OK\n"
+	char *response;
+	char headers[]  = "HTTP/1.1 200 OK\n"
 	                  "Server: cimon/0.0.1\n"
 	                  "Content-Type: text/html; charset=UTF-8\n"
 	                  "Connection: close\n"
 	                  "\n";
 	
+	send(sock, headers, strlen(headers), 0);
+	DEBUG("%s", headers);
+	
+	response = content_renderer();
+	
 	send(sock, response, strlen(response), 0);
-	send(sock, "hello\n", 6, 0);
 	DEBUG("%s", response);
+	free(response);
 }
 
 static void response_404(int sock)
@@ -43,6 +51,8 @@ static void handle_request(int client_sock)
 {
 	char *buff;
 	char request[255];
+	char * (*pages[])() = {render_index};
+	typedef enum {INDEX} page_types;
 	
 	buff = (char *) malloc(BUFF_SIZE * sizeof(char));
 	memset(buff, 0, BUFF_SIZE);
@@ -62,11 +72,13 @@ static void handle_request(int client_sock)
 	
 	if (!strcmp(request, "/")) {
 		DEBUG("Sending page: %s\n", request);
-		response_index(client_sock);
+		response_page(client_sock, pages[INDEX]);
 	} else {
 		DEBUG("Request unknown: %s\n", request);
 		response_404(client_sock);
 	}
+	
+	free(buff);
 }
 
 void close_sockets()

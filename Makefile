@@ -10,7 +10,7 @@ cimond: cimond.o memory.o cpu.o net.o log.o rrd.o
 
 cimon-graph: cimon-graph.o memory.o cpu.o net.o log.o rrd.o
 
-cimon-web: cimon-web.o memory.o cpu.o net.o log.o rrd.o
+cimon-web: cimon-web.o memory.o cpu.o net.o log.o rrd.o render-index.o
 
 %.o : %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
