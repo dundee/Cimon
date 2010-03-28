@@ -36,6 +36,45 @@ static void response_page(int sock, char * (*content_renderer)())
 	free(response);
 }
 
+static void response_file(int sock, char * file)
+{
+	FILE *fp;
+	char *buff;
+	char length_header[BUFF_SIZE];
+	unsigned length;
+	
+	char headers[]  = "HTTP/1.1 200 OK\n"
+	                  "Server: cimon/0.0.1\n"
+	                  "Content-Type: image/png\n"
+	                  "Accept-Ranges: bytes\n";
+	char headers2[] = "Connection: close\n\n";
+	
+	send(sock, headers, strlen(headers), 0);
+	DEBUG("%s", headers);
+	
+	fp = fopen(file, "r");
+	if (fp == NULL) WARNING("Cannot open file %s\n", file);
+	
+	fseek(fp, 0, SEEK_END);
+	length = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	
+	snprintf(length_header, BUFF_SIZE, "Content-Length: %u\n", length);
+	send(sock, length_header, strlen(length_header), 0);
+	DEBUG("%s", length_header);
+	
+	send(sock, headers2, strlen(headers2), 0);
+	DEBUG("%s", headers2);
+	
+	buff = (char *) malloc(length);
+	memset(buff, 0, length);
+	
+	fread(buff, 1, length, fp);
+	fclose(fp);
+	
+	send(sock, buff, length, 0);
+}
+
 static void response_404(int sock)
 {
 	char response[] = "HTTP/1.1 404 Not Found\n"
@@ -73,6 +112,9 @@ static void handle_request(int client_sock)
 	if (!strcmp(request, "/")) {
 		DEBUG("Sending page: %s\n", request);
 		response_page(client_sock, pages[INDEX]);
+	} else if (!strcmp(request, "/memory.png")) {
+		DEBUG("Sending file: %s\n", request);
+		response_file(client_sock, "memory.png");
 	} else {
 		DEBUG("Request unknown: %s\n", request);
 		response_404(client_sock);
