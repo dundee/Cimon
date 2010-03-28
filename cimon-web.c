@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-/* #define DEBUG_MODE 1 */
+/*#define DEBUG_MODE 1*/
 
 #include "log.h"
 #include "render-index.h"
@@ -53,7 +53,10 @@ static void response_file(int sock, char * file)
 	DEBUG("%s", headers);
 	
 	fp = fopen(file, "r");
-	if (fp == NULL) WARNING("Cannot open file %s\n", file);
+	if (fp == NULL) {
+		WARNING("Cannot open file %s\n", file);
+		return;
+	}
 	
 	fseek(fp, 0, SEEK_END);
 	length = ftell(fp);
@@ -70,9 +73,15 @@ static void response_file(int sock, char * file)
 	memset(buff, 0, length);
 	
 	fread(buff, 1, length, fp);
-	fclose(fp);
+	if (ferror(fp)) {
+		WARNING("Cannot read from file %s\n", file);
+		fclose(fp);
+		return;
+	}
 	
 	send(sock, buff, length, 0);
+	free(buff);
+	fclose(fp);
 }
 
 static void response_404(int sock)
@@ -115,6 +124,12 @@ static void handle_request(int client_sock)
 	} else if (!strcmp(request, "/memory.png")) {
 		DEBUG("Sending file: %s\n", request);
 		response_file(client_sock, "memory.png");
+	} else if (!strcmp(request, "/cpu.png")) {
+		DEBUG("Sending file: %s\n", request);
+		response_file(client_sock, "cpu.png");
+	} else if (!strcmp(request, "/net.png")) {
+		DEBUG("Sending file: %s\n", request);
+		response_file(client_sock, "net.png");
 	} else {
 		DEBUG("Request unknown: %s\n", request);
 		response_404(client_sock);
