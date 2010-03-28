@@ -1,0 +1,2 @@
+
+char * render_index();
