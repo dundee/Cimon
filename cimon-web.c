@@ -7,9 +7,11 @@
 #include <unistd.h>
 #include <signal.h>
 
-/*#define DEBUG_MODE 1*/
+#define DEBUG_MODE 1
 
+#include "config.h"
 #include "log.h"
+#include "utils.h"
 #include "render-index.h"
 
 #define BUFF_SIZE 1024
@@ -40,6 +42,7 @@ static void response_file(int sock, char * file)
 {
 	FILE *fp;
 	char *buff;
+	char *filename;
 	char length_header[BUFF_SIZE];
 	unsigned length;
 	
@@ -52,9 +55,11 @@ static void response_file(int sock, char * file)
 	send(sock, headers, strlen(headers), 0);
 	DEBUG("%s", headers);
 	
-	fp = fopen(file, "r");
+	filename = compose_filename(DATA_DIR, file);
+	
+	fp = fopen(filename, "r");
 	if (fp == NULL) {
-		WARNING("Cannot open file %s\n", file);
+		WARNING("Cannot open file %s\n", filename);
 		return;
 	}
 	
@@ -105,6 +110,7 @@ static void handle_request(int client_sock)
 	buff = (char *) malloc(BUFF_SIZE * sizeof(char));
 	memset(buff, 0, BUFF_SIZE);
 	
+	/* read GET request */
 	while (recv(client_sock, buff, BUFF_SIZE, 0) > 0) {
 		DEBUG("%s", buff);
 		if (strstr(buff, "GET ") != NULL) {

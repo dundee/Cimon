@@ -3,6 +3,10 @@
 #include <pthread.h>
 #include <signal.h>
 
+#define DEBUG_MODE 1
+
+#include "log.h"
+#include "config.h"
 #include "memory.h"
 #include "cpu.h"
 #include "net.h"
@@ -34,15 +38,18 @@ int main(int argc, char** argv)
 	thread_params_t params[3];
 	int i;
 	
-	params[0].func    = cpu_update_rrd;
-	params[0].datadir = ".";
-	params[1].func = cpu_update_rrd;
-	params[1].datadir = ".";
-	params[2].func = cpu_update_rrd;
-	params[2].datadir = ".";
+	params[0].func    = memory_update_rrd;
+	params[0].datadir = DATA_DIR;
+	params[1].func    = cpu_update_rrd;
+	params[1].datadir = DATA_DIR;
+	params[2].func    = net_update_rrd;
+	params[2].datadir = DATA_DIR;
 	
+	DEBUG("Starting thread for %s monitor\n", "memory");
 	pthread_create(&threads[0], NULL, update_loop, (void *) &params[0]);
+	DEBUG("Starting thread for %s monitor\n", "cpu");
 	pthread_create(&threads[1], NULL, update_loop, (void *) &params[1]);
+	DEBUG("Starting thread for %s monitor\n", "network");
 	pthread_create(&threads[2], NULL, update_loop, (void *) &params[2]);
 	
 	for (i = 0; i < 3; i++) {

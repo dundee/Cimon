@@ -2,9 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DEBUG_MODE 1
+
 #include "log.h"
 #include "rrd.h"
+#include "utils.h"
 #include "memory.h"
+
+#define BUFF_SIZE 1024
 
 void memory_create_rrd(char * datadir)
 {
@@ -45,9 +50,16 @@ void memory_update_rrd(char * datadir)
 
 void memory_create_graph(char * datadir)
 {
+	char *rrd_path;
+	char used_def[BUFF_SIZE];
+	char cached_def[BUFF_SIZE];
+	char buffers_def[BUFF_SIZE];
+	char free_def[BUFF_SIZE];
+	char total_def[BUFF_SIZE];
+	
 	char * params[] = {
 		"load",
-		"memory.png",
+		"./memory.png",
 		"--imgformat", "PNG",
 		"--title", "Memory stats",
 		"--vertical-label", "RAM",
@@ -55,11 +67,11 @@ void memory_create_graph(char * datadir)
 		"--height", "400",
 		"--lower-limit", "0",
 
-		"DEF:used=memory.rrd:used:AVERAGE",
-		"DEF:cached=memory.rrd:cached:AVERAGE",
-		"DEF:buffers=memory.rrd:buffers:AVERAGE",
-		"DEF:free=memory.rrd:free:AVERAGE",
-		"DEF:total=memory.rrd:total:AVERAGE",
+		"DEF:used=memory.rrd:used:AVERAGE",       /* 14 */
+		"DEF:cached=memory.rrd:cached:AVERAGE",   /* 15 */
+		"DEF:buffers=memory.rrd:buffers:AVERAGE", /* 16 */
+		"DEF:free=memory.rrd:free:AVERAGE",       /* 17 */
+		"DEF:total=memory.rrd:total:AVERAGE",     /* 18 */
 
 		"VDEF:usedavg=used,AVERAGE",
 		"VDEF:usedmax=used,MAXIMUM",
@@ -104,8 +116,23 @@ void memory_create_graph(char * datadir)
 		"GPRINT:totalmax:%7.2lfM",
 		"GPRINT:totalmin:%7.2lfM"
 	};
+	
+	rrd_path = compose_filename(datadir, "memory.rrd");
+	
+	params[14] = used_def;
+	params[15] = cached_def;
+	params[16] = buffers_def;
+	params[17] = free_def;
+	params[18] = total_def;
+	
+	snprintf(params[14], BUFF_SIZE, "DEF:used=%s:used:AVERAGE", rrd_path);
+	snprintf(params[15], BUFF_SIZE, "DEF:cached=%s:cached:AVERAGE", rrd_path);
+	snprintf(params[16], BUFF_SIZE, "DEF:buffers=%s:buffers:AVERAGE", rrd_path);
+	snprintf(params[17], BUFF_SIZE, "DEF:free=%s:free:AVERAGE", rrd_path);
+	snprintf(params[18], BUFF_SIZE, "DEF:total=%s:total:AVERAGE", rrd_path);
+	
 	if (!rrd_db_exists(datadir, "memory.rrd")) memory_create_rrd(datadir);
-	rrd_create_graph(sizeof(params) / sizeof(char *), params);
+	rrd_create_graph(datadir, "memory.png", sizeof(params) / sizeof(char *), params);
 }
 
 memory_info_t memory_get_values()

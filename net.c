@@ -2,9 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DEBUG_MODE 1
+
 #include "log.h"
 #include "rrd.h"
+#include "utils.h"
 #include "net.h"
+
+#define BUFF_SIZE 1024
 
 void net_create_rrd(char * datadir)
 {
@@ -39,6 +44,11 @@ void net_update_rrd(char * datadir)
 
 void net_create_graph(char * datadir)
 {
+	char *rrd_path;
+	char download_def[BUFF_SIZE];
+	char upload_def[BUFF_SIZE];
+	int i;
+	
 	char * params[] = {
 		"load",
 		"net.png",
@@ -49,8 +59,8 @@ void net_create_graph(char * datadir)
 		"--height", "400",
 		"--lower-limit", "0",
 
-		"DEF:download=net.rrd:download:AVERAGE",
-		"DEF:upload=net.rrd:upload:AVERAGE",
+		"DEF:download=net.rrd:download:AVERAGE", /* 14 */
+		"DEF:upload=net.rrd:upload:AVERAGE",     /* 15 */
 
 		"LINE:download#0F0:Download",
 		"GPRINT:download:MAX:Max download\\: %2.2lf bytes/sec",
@@ -58,8 +68,17 @@ void net_create_graph(char * datadir)
 		"LINE:upload#00F:Upload",
 		"GPRINT:upload:MAX:Max upload\\: %2.2lf bytes/sec",
 	};
+	
+	rrd_path = compose_filename(datadir, "net.rrd");
+	
+	params[14] = download_def;
+	params[15] = upload_def;
+	
+	snprintf(params[14], BUFF_SIZE, "DEF:download=%s:download:AVERAGE", rrd_path);
+	snprintf(params[15], BUFF_SIZE, "DEF:upload=%s:upload:AVERAGE", rrd_path);
+	
 	if (!rrd_db_exists(datadir, "net.rrd")) net_create_rrd(datadir);
-	rrd_create_graph(sizeof(params) / sizeof(char *), params);
+	rrd_create_graph(datadir, "net.png", sizeof(params) / sizeof(char *), params);
 }
 
 net_info_t net_get_values()

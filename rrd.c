@@ -3,19 +3,10 @@
 #include <rrd.h>
 #include <stdlib.h>
 
-#include "log.h"
+#define DEBUG_MODE 1
 
-static char * compose_filename(char *dir, char *name)
-{
-	char filename[FILENAME_MAX];
-	
-	strncpy(filename, dir, FILENAME_MAX - 1);
-	filename[FILENAME_MAX - 1] = '\0';
-	strncat(filename, "/", FILENAME_MAX - 2);
-	strncat(filename, name, FILENAME_MAX - strlen(filename) - 1);
-	
-	return strdup(filename);
-}
+#include "log.h"
+#include "utils.h"
 
 int rrd_create_db(char *dir, char * name, int argc, const char *argv[])
 {
@@ -30,6 +21,8 @@ int rrd_create_db(char *dir, char * name, int argc, const char *argv[])
 	
 	if (status != 0) WARNING ("rrd_create (%s) returned status %i.\n", filename, status);
 	else DEBUG ("Successfully created RRD file \"%s\".\n", filename);
+	
+	if (rrd_test_error()) WARNING("RRD error: %s\n", rrd_get_error());
 	
 	free(filename);
 	
@@ -47,14 +40,24 @@ int rrd_update_db(char * dir, char * name, int argc, char * argv[])
 	if (status != 0) WARNING ("rrd_update (%s) returned status %i.\n", filename, status);
 	else DEBUG ("Successfully updated RRD file \"%s\".\n", filename);
 	
+	if (rrd_test_error()) WARNING("RRD error: %s\n", rrd_get_error());
+	
 	free(filename);
 	
 	return status;
 }
 
-int rrd_create_graph(int argc, char * argv[])
+int rrd_create_graph(char * dir, char * name, int argc, char * argv[])
 {
+	char *filename;
+	
+	filename = compose_filename(dir, name);
+	argv[1] = filename;
+	
+	DEBUG("Updating graph: %s\n", argv[1]);
 	rrd_graph_v(argc, argv);
+	
+	if (rrd_test_error()) WARNING("RRD error: %s\n", rrd_get_error());
 	
 	return 1;
 }
