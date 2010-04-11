@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG_MODE 1
 #define BUFF_SIZE 1024 * 4
 
 #include "log.h"
@@ -12,9 +11,9 @@
 char * render_index()
 {
 	char *buffer, *tmp;
-	memory_info_t memory;
-	cpu_info_t cpu;
-	net_info_t net;
+	memory_info_t *memory;
+	cpu_info_t *cpu;
+	net_info_t *net;
 	
 	buffer = tmp = (char *) malloc(sizeof(char) * BUFF_SIZE);
 	
@@ -113,29 +112,29 @@ table td {\n\
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t<div class=\"info\">\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<h2>CPU</h2>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<table>\n");
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Load:</td><td>%f</td></tr>\n", cpu.load);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>User:</td><td>%u</td></tr>\n", cpu.user);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Nice:</td><td>%u</td></tr>\n", cpu.nice);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>System:</td><td>%u</td></tr>\n", cpu.system);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Load:</td><td>%f</td></tr>\n", cpu->load);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>User:</td><td>%u</td></tr>\n", cpu->user);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Nice:</td><td>%u</td></tr>\n", cpu->nice);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>System:</td><td>%u</td></tr>\n", cpu->system);
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t</table>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t</div>\n");
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t<div class=\"info\">\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<h2>Memory</h2>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<table>\n");
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Used:</td><td>%u MB</td></tr>\n", memory.used/1000);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Cached:</td><td>%u MB</td></tr>\n", memory.cached/1000);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Buffers:</td><td>%u MB</td></tr>\n", memory.buffers/1000);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Free:</td><td>%u MB</td></tr>\n", memory.free/1000);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Total:</td><td>%u MB</td></tr>\n", memory.total/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Used:</td><td>%u MB</td></tr>\n", memory->used/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Cached:</td><td>%u MB</td></tr>\n", memory->cached/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Buffers:</td><td>%u MB</td></tr>\n", memory->buffers/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Free:</td><td>%u MB</td></tr>\n", memory->free/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Total:</td><td>%u MB</td></tr>\n", memory->total/1000);
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t</table>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t</div>\n");
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t<div class=\"info\">\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<h2>Network</h2>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<table>\n");
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Download:</td><td>%u</td></tr>\n", net.download);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Upload:</td><td>%u</td></tr>\n", net.upload);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Download:</td><td>%u</td></tr>\n", net->download);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Upload:</td><td>%u</td></tr>\n", net->upload);
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t</table>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t</div>\n");
 	
@@ -150,6 +149,14 @@ table td {\n\
 </div>\n");
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "</body></html>");
+	
+	DEBUG("Response for %s written to buffer\n", "index");
+	
+	free(memory);
+	free(cpu);
+	free(net);
+	
+	DEBUG("Structures for %s freed\n", "memory, cpu, net");
 	
 	return buffer;
 }

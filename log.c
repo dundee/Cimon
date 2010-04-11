@@ -3,11 +3,11 @@
 
 #include "log.h"
 
-void mlog (char *msg, ...) {
+int mlog (char *msg, ...) {
 	va_list ap;
 	
 	va_start (ap, msg);
 	vfprintf (stderr, msg, ap);
 	va_end (ap);
-	return;
+	return 0;
 }

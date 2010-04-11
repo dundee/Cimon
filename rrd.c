@@ -3,8 +3,6 @@
 #include <rrd.h>
 #include <stdlib.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "utils.h"
 

@@ -23,7 +23,7 @@ set(CORELIBS rrd_th)
 
 add_executable(cimond cimond.c memory.c cpu.c net.c log.c rrd.c utils.c)
 add_executable(cimon-graph cimon-graph.c memory.c cpu.c net.c log.c rrd.c utils.c)
-add_executable(cimon-web cimon-web.c memory.c cpu.c net.c log.c rrd.c utils.c render-index.c)
+add_executable(cimon-web cimon-web.c memory.c cpu.c net.c log.c rrd.c utils.c render-index.c cache.c)
 
 foreach(program ${PROGRAMS})
     target_link_libraries(${program} ${CORELIBS})

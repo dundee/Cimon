@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "config.h"
 #include "memory.h"

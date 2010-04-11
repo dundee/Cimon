@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "rrd.h"
 #include "utils.h"
@@ -26,20 +24,21 @@ void net_create_rrd(char * datadir)
 
 void net_update_rrd(char * datadir)
 {
-	net_info_t net;
+	net_info_t *net;
 	char * buff[1];
 	char tmp[100];
 
 	if (!rrd_db_exists(datadir, "net.rrd")) net_create_rrd(datadir);
 
 	net = net_get_values();
-	sprintf(tmp, "N:%d:%d", net.download, net.upload);
+	sprintf(tmp, "N:%d:%d", net->download, net->upload);
 	buff[0] = strdup(tmp);
 
 	DEBUG("net: %s\n", buff[0]);
 
 	rrd_update_db(datadir, "net.rrd", 1, buff);
 	free(buff[0]);
+	free(net);
 }
 
 void net_create_graph(char * datadir)
@@ -47,7 +46,6 @@ void net_create_graph(char * datadir)
 	char *rrd_path;
 	char download_def[BUFF_SIZE];
 	char upload_def[BUFF_SIZE];
-	int i;
 	
 	char * params[] = {
 		"load",
@@ -81,28 +79,36 @@ void net_create_graph(char * datadir)
 	rrd_create_graph(datadir, "net.png", sizeof(params) / sizeof(char *), params);
 }
 
-net_info_t net_get_values()
+net_info_t *net_get_values()
 {
 	FILE * fp;
-	net_info_t net;
+	net_info_t *net;
 	int i;
 	unsigned var;
 	
+	net = (net_info_t *) malloc(sizeof(net_info_t));
+	memset(net, 0, sizeof(net_info_t));
+	
 	fp = fopen("/proc/net/dev", "r");
+	
+	if (fp == NULL) {
+		WARNING("File %s doesn't exist or is not readable.\n", "/proc/net/dev");
+		exit(1);
+	}
 
-	fscanf(fp, "%*[^:]");
-	fscanf(fp, ": %*[^:]");
-	fscanf(fp, ": %u", &net.download);
+	fscanf(fp, "%*[^:]") != EOF || WARNING("Cannot parse %s.\n", "/proc/net/dev");
+	fscanf(fp, ": %*[^:]") != EOF || WARNING("Cannot parse %s.\n", "/proc/net/dev");
+	fscanf(fp, ": %u", &net->download) || WARNING("Cannot parse %s.\n", "/proc/net/dev");
 
 	for (i=0; i < 7; ++i) {
-		fscanf(fp, " %u ", &var);
+		fscanf(fp, " %u ", &var) || WARNING("Cannot parse %s.\n", "/proc/net/dev");;
 	}
-	fscanf(fp, "%u", &net.upload);
+	fscanf(fp, "%u", &net->upload) || WARNING("Cannot parse %s.\n", "/proc/net/dev");
 
-	fclose(fp);
+	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/net/dev");
 	
-	DEBUG("cpu: download %f\n", net.download);
-	DEBUG("net: upload %d\n", net.upload);
+	DEBUG("net: download %f\n", net->download);
+	DEBUG("net: upload %d\n", net->upload);
 	
 	return net;
 }

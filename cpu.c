@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "rrd.h"
 #include "utils.h"
@@ -30,20 +28,21 @@ void cpu_create_rrd(char * datadir)
 
 void cpu_update_rrd(char * datadir)
 {
-	cpu_info_t cpu;
+	cpu_info_t *cpu;
 	char * buff[1];
 	char tmp[100];
 	
 	if (!rrd_db_exists(datadir, "cpu.rrd")) cpu_create_rrd(datadir);
 
 	cpu = cpu_get_values();
-	sprintf(tmp, "N:%f:%d:%d:%d", cpu.load, cpu.user, cpu.nice, cpu.system);
+	sprintf(tmp, "N:%f:%d:%d:%d", cpu->load, cpu->user, cpu->nice, cpu->system);
 	buff[0] = strdup(tmp);
 
 	DEBUG("cpu: %s\n", buff[0]);
 
 	rrd_update_db(datadir, "cpu.rrd", 1, buff);
 	free(buff[0]);
+	free(cpu);
 }
 
 void cpu_create_graph(char * datadir)
@@ -113,25 +112,38 @@ void cpu_create_graph(char * datadir)
 	rrd_create_graph(datadir, "cpu.png", sizeof(params) / sizeof(char *), params);
 }
 
-cpu_info_t cpu_get_values()
+cpu_info_t *cpu_get_values()
 {
 	FILE * fp;
-	cpu_info_t cpu;
+	cpu_info_t *cpu;
+	
+	cpu = (cpu_info_t *) malloc(sizeof(cpu_info_t));
+	memset(cpu, 0, sizeof(cpu_info_t));
 	
 	fp = fopen("/proc/loadavg", "r");
-	fscanf(fp, "%f", &cpu.load);
-	fclose(fp);
+	if (fp == NULL) {
+		WARNING("File %s doesn't exist or is not readable.\n", "/proc/loadavg");
+		exit(1);
+	}
+	
+	fscanf(fp, "%f", &cpu->load) || WARNING("Cannot parse %s.\n", "/proc/loadavg");
+	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/loadavg");
 
 	fp = fopen("/proc/stat", "r");
-	fscanf(fp, "cpu %u", &cpu.user);
-	fscanf(fp, "%u", &cpu.nice);
-	fscanf(fp, "%u", &cpu.system);
-	fclose(fp);
+	if (fp == NULL) {
+		WARNING("File %s doesn't exist or is not readable.\n", "/proc/stat");
+		exit(1);
+	}
 	
-	DEBUG("cpu: load %f\n", cpu.load);
-	DEBUG("cpu: user %d\n", cpu.user);
-	DEBUG("cpu: nice %d\n", cpu.nice);
-	DEBUG("cpu: system %d\n", cpu.system);
+	fscanf(fp, "cpu %u", &cpu->user) || WARNING("Cannot parse %s.\n", "/proc/stat");
+	fscanf(fp, "%u", &cpu->nice) || WARNING("Cannot parse %s.\n", "/proc/stat");
+	fscanf(fp, "%u", &cpu->system) || WARNING("Cannot parse %s.\n", "/proc/stat");
+	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/stat");
+	
+	DEBUG("cpu: load %f\n", cpu->load);
+	DEBUG("cpu: user %d\n", cpu->user);
+	DEBUG("cpu: nice %d\n", cpu->nice);
+	DEBUG("cpu: system %d\n", cpu->system);
 	
 	
 	return cpu;

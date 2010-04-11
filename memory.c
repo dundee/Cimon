@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG_MODE 1
-
 #include "log.h"
 #include "rrd.h"
 #include "utils.h"
@@ -30,7 +28,7 @@ void memory_create_rrd(char * datadir)
 
 void memory_update_rrd(char * datadir)
 {
-	memory_info_t memory;
+	memory_info_t *memory;
 	char tmp[100];
 	char * buff[1];
 	
@@ -38,7 +36,7 @@ void memory_update_rrd(char * datadir)
 	
 	memory = memory_get_values();
 
-	sprintf(tmp, "N:%d:%d:%d:%d:%d", memory.used/1000, memory.cached/1000, memory.buffers/1000, memory.free/1000, memory.total/1000);
+	sprintf(tmp, "N:%d:%d:%d:%d:%d", memory->used/1000, memory->cached/1000, memory->buffers/1000, memory->free/1000, memory->total/1000);
 
 	buff[0] = strdup(tmp);
 
@@ -46,6 +44,7 @@ void memory_update_rrd(char * datadir)
 
 	rrd_update_db(datadir, "memory.rrd", 1, buff);
 	free(buff[0]);
+	free(memory);
 }
 
 void memory_create_graph(char * datadir)
@@ -135,32 +134,35 @@ void memory_create_graph(char * datadir)
 	rrd_create_graph(datadir, "memory.png", sizeof(params) / sizeof(char *), params);
 }
 
-memory_info_t memory_get_values()
+memory_info_t *memory_get_values()
 {
 	FILE *fp;
-	memory_info_t memory;
+	memory_info_t *memory;
+	
+	memory = (memory_info_t *) malloc(sizeof(memory_info_t));
+	memset(memory, 0, sizeof(memory_info_t));
 
 	fp = fopen("/proc/meminfo", "r");
 
 	if (fp == NULL) {
-		printf("File /proc/meminfo doesn't exist or is not readable.\n");
+		WARNING("File %s doesn't exist or is not readable.\n", "/proc/meminfo");
 		exit(1);
 	}
 
-	fscanf(fp, "MemTotal: %u kB\n", &memory.total);
-	fscanf(fp, "MemFree: %u kB\n", &memory.free);
-	fscanf(fp, "Buffers: %u kB\n", &memory.buffers);
-	fscanf(fp, "Cached: %u kB\n", &memory.cached);
+	fscanf(fp, "MemTotal: %u kB\n", &memory->total) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
+	fscanf(fp, "MemFree: %u kB\n", &memory->free) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
+	fscanf(fp, "Buffers: %u kB\n", &memory->buffers) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
+	fscanf(fp, "Cached: %u kB\n", &memory->cached) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
 	
-	memory.used = memory.total - memory.free - memory.buffers - memory.cached;
+	memory->used = memory->total - memory->free - memory->buffers - memory->cached;
 
-	fclose(fp);
+	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/meminfo");
 
-	DEBUG("memory: total %d\n", memory.total);
-	DEBUG("memory: free %d\n", memory.free);
-	DEBUG("memory: buffers %d\n", memory.buffers);
-	DEBUG("memory: cached %d\n", memory.cached);
-	DEBUG("memory: total %d\n", memory.used);
+	DEBUG("memory: total %d\n", memory->total);
+	DEBUG("memory: free %d\n", memory->free);
+	DEBUG("memory: buffers %d\n", memory->buffers);
+	DEBUG("memory: cached %d\n", memory->cached);
+	DEBUG("memory: total %d\n", memory->used);
 
 	return memory;
 }

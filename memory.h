@@ -11,4 +11,4 @@ void memory_create_rrd(char * datadir);
 void memory_update_rrd(char * datadir);
 void memory_create_graph(char * datadir);
 
-memory_info_t memory_get_values();
+memory_info_t *memory_get_values();

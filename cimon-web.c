@@ -7,12 +7,11 @@
 #include <unistd.h>
 #include <signal.h>
 
-#define DEBUG_MODE 1
-
 #include "config.h"
 #include "log.h"
 #include "utils.h"
 #include "render-index.h"
+#include "cache.h"
 
 #define BUFF_SIZE 1024
 
@@ -28,13 +27,24 @@ static void response_page(int sock, char * (*content_renderer)())
 	                  "Connection: close\n"
 	                  "\n";
 	
-	send(sock, headers, strlen(headers), 0);
+	if (send(sock, headers, strlen(headers), 0) == -1) {
+		WARNING("Cannot send to socket: %s\n", headers);
+	}
 	DEBUG("%s", headers);
 	
-	response = content_renderer();
+	if (cache_is_valid("index")) {
+		response = cache_get_content("index");
+	} else {
+		response = content_renderer();
+		cache_set_content("index", response, 60);
+	}
 	
-	send(sock, response, strlen(response), 0);
-	DEBUG("%s", response);
+	DEBUG("Trying to send page %s\n", "index");
+	
+	if (send(sock, response, strlen(response), 0) <= 0) {
+		WARNING("Cannot send to socket: %s\n", response);
+	}
+	DEBUG("Send response: %s\n", response);
 	free(response);
 }
 
@@ -52,7 +62,9 @@ static void response_file(int sock, char * file)
 	                  "Accept-Ranges: bytes\n";
 	char headers2[] = "Connection: close\n\n";
 	
-	send(sock, headers, strlen(headers), 0);
+	if (send(sock, headers, strlen(headers), 0) == -1) {
+		WARNING("Cannot send to socket: %s\n", headers);
+	}
 	DEBUG("%s", headers);
 	
 	filename = compose_filename(DATA_DIR, file);
@@ -68,10 +80,14 @@ static void response_file(int sock, char * file)
 	fseek(fp, 0, SEEK_SET);
 	
 	snprintf(length_header, BUFF_SIZE, "Content-Length: %u\n", length);
-	send(sock, length_header, strlen(length_header), 0);
+	if (send(sock, length_header, strlen(length_header), 0) == -1) {
+		WARNING("Cannot send to socket: %s\n", length_header);
+	}
 	DEBUG("%s", length_header);
 	
-	send(sock, headers2, strlen(headers2), 0);
+	if (send(sock, headers2, strlen(headers2), 0) == -1) {
+		WARNING("Cannot send to socket: %s\n", headers);
+	}
 	DEBUG("%s", headers2);
 	
 	buff = (char *) malloc(length);
@@ -84,7 +100,9 @@ static void response_file(int sock, char * file)
 		return;
 	}
 	
-	send(sock, buff, length, 0);
+	if (send(sock, buff, length, 0) == -1) {
+		WARNING("Cannot send to socket: %s\n", buff);
+	}
 	free(buff);
 	fclose(fp);
 }
@@ -155,6 +173,11 @@ void close_sockets()
 	close(server_sock);
 }
 
+void no_action()
+{
+	WARNING("%s\n", "Ignoring SIGPIPE");
+}
+
 int main(int argc, char** argv)
 {
 	unsigned int port;
@@ -164,13 +187,20 @@ int main(int argc, char** argv)
 	int client_sock;
 	unsigned int client_addr_size;
 	int on = 1;
+	struct sigaction action_close_sock;
+	struct sigaction action_no_action;
 	
-	struct sigaction action;
-	action.sa_flags = 0;
-	sigemptyset(&action.sa_mask);
-	action.sa_handler = close_sockets;
-	sigaction(SIGINT,  &action, NULL);
-	sigaction(SIGTERM, &action, NULL);
+	action_close_sock.sa_flags = 0;
+	sigemptyset(&action_close_sock.sa_mask);
+	action_close_sock.sa_handler = close_sockets;
+	
+	action_no_action.sa_flags = 0;
+	sigemptyset(&action_no_action.sa_mask);
+	action_no_action.sa_handler = no_action;
+	
+	sigaction(SIGINT,  &action_close_sock, NULL);
+	sigaction(SIGTERM, &action_close_sock, NULL);
+	sigaction(SIGPIPE, &action_no_action, NULL);
 	atexit(close_sockets);
 	
 	if (argc >= 2) sscanf(argv[1], "%u", &port);
