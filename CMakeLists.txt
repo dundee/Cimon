@@ -6,6 +6,7 @@ set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 set(DATA_DIR "\"/var/lib/cimon\"" CACHE PATH "Where databases and images should be stored")
 
 configure_file("config.h.cmake" "${CMAKE_SOURCE_DIR}/config.h")
+option(DEBUG_MODE "Enable verbose mode" OFF)
 
 find_library(RRD_LIB NAMES "rrd_th")
 if (RRD_LIB)
