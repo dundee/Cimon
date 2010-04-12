@@ -9,40 +9,34 @@
 int rrd_create_db(char *dir, char * name, int argc, const char *argv[])
 {
 	char *filename;
-	int status;
 	time_t now;
 	
 	time(&now);
 	
 	filename = compose_filename(dir, name);
-	status = rrd_create_r(filename, 60, now - 10, argc, argv);
-	
-	if (status != 0) WARNING ("rrd_create (%s) returned status %i.\n", filename, status);
-	else DEBUG ("Successfully created RRD file \"%s\".\n", filename);
-	
-	if (rrd_test_error()) WARNING("RRD error: %s\n", rrd_get_error());
+	if (rrd_create_r(filename, 60, now - 10, argc, argv)) {
+		WARNING ("rrd_create (%s) returned error status.\n", filename);
+		ERROR("RRD error: %s\n", rrd_get_error());
+	} else DEBUG ("Successfully created RRD file \"%s\".\n", filename);
 	
 	free(filename);
 	
-	return status;
+	return 0;
 }
 
 int rrd_update_db(char * dir, char * name, int argc, char * argv[])
 {
 	char *filename;
-	int status;
 	
 	filename = compose_filename(dir, name);
-	status = rrd_update_r(filename, NULL, argc, (const char **) argv);
-	
-	if (status != 0) WARNING ("rrd_update (%s) returned status %i.\n", filename, status);
-	else DEBUG ("Successfully updated RRD file \"%s\".\n", filename);
-	
-	if (rrd_test_error()) WARNING("RRD error: %s\n", rrd_get_error());
+	if(rrd_update_r(filename, NULL, argc, (const char **) argv)) {
+		WARNING ("rrd_update (%s) returned error status.\n", filename);
+		ERROR("RRD error: %s\n", rrd_get_error());
+	} else DEBUG ("Successfully updated RRD file \"%s\".\n", filename);
 	
 	free(filename);
 	
-	return status;
+	return 0;
 }
 
 int rrd_create_graph(char * dir, char * name, int argc, char * argv[])

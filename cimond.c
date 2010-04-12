@@ -44,11 +44,11 @@ int main(int argc, char** argv)
 	params[2].datadir = DATA_DIR;
 	
 	DEBUG("Starting thread for %s monitor\n", "memory");
-	pthread_create(&threads[0], NULL, update_loop, (void *) &params[0]);
+	if(pthread_create(&threads[0], NULL, update_loop, (void *) &params[0])) ERROR("Thread %d cannot be started\n", 0);
 	DEBUG("Starting thread for %s monitor\n", "cpu");
-	pthread_create(&threads[1], NULL, update_loop, (void *) &params[1]);
+	if(pthread_create(&threads[1], NULL, update_loop, (void *) &params[1])) ERROR("Thread %d cannot be started\n", 1);
 	DEBUG("Starting thread for %s monitor\n", "network");
-	pthread_create(&threads[2], NULL, update_loop, (void *) &params[2]);
+	if(pthread_create(&threads[2], NULL, update_loop, (void *) &params[2])) ERROR("Thread %d cannot be started\n", 2);
 	
 	for (i = 0; i < 3; i++) {
 		pthread_join(threads[i], NULL);

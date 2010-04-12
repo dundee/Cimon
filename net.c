@@ -96,16 +96,16 @@ net_info_t *net_get_values()
 		exit(1);
 	}
 
-	fscanf(fp, "%*[^:]") != EOF || WARNING("Cannot parse %s.\n", "/proc/net/dev");
-	fscanf(fp, ": %*[^:]") != EOF || WARNING("Cannot parse %s.\n", "/proc/net/dev");
-	fscanf(fp, ": %u", &net->download) || WARNING("Cannot parse %s.\n", "/proc/net/dev");
+	if(fscanf(fp, "%*[^:]") == EOF) WARNING("Cannot parse %s.\n", "/proc/net/dev");
+	if(fscanf(fp, ": %*[^:]") == EOF) WARNING("Cannot parse %s.\n", "/proc/net/dev");
+	if(!fscanf(fp, ": %u", &net->download)) WARNING("Cannot parse %s.\n", "/proc/net/dev");
 
 	for (i=0; i < 7; ++i) {
-		fscanf(fp, " %u ", &var) || WARNING("Cannot parse %s.\n", "/proc/net/dev");;
+		if(!fscanf(fp, " %u ", &var)) WARNING("Cannot parse %s.\n", "/proc/net/dev");;
 	}
-	fscanf(fp, "%u", &net->upload) || WARNING("Cannot parse %s.\n", "/proc/net/dev");
+	if(!fscanf(fp, "%u", &net->upload)) WARNING("Cannot parse %s.\n", "/proc/net/dev");
 
-	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/net/dev");
+	if(fclose(fp)) WARNING("Cannot close %s.\n", "/proc/net/dev");
 	
 	DEBUG("net: download %f\n", net->download);
 	DEBUG("net: upload %d\n", net->upload);

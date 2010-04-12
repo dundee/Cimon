@@ -208,7 +208,7 @@ int main(int argc, char** argv)
 	
 	server_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); /* TCP */
 	if (server_sock < 0) {
-		WARNING("Can not open socket for port %d\n", port);
+		ERROR("Can not open socket for port %d\n", port);
 		return 1;
 	}
 	
@@ -217,7 +217,7 @@ int main(int argc, char** argv)
 	server_addr.sin_port = htons(port);
 	
 	if (bind(server_sock, (const struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
-		WARNING("Can not bind to port %d\n", port);
+		ERROR("Can not bind to port %d\n", port);
 		return 1;
 	}
 	DEBUG("Binded to port %d\n", port);
@@ -227,7 +227,7 @@ int main(int argc, char** argv)
 	}
 
 	if (listen(server_sock, 0) < 0) {
-		WARNING("Can not listen on port %d\n", port);
+		ERROR("Can not listen on port %d\n", port);
 		return 1;
 	}
 	DEBUG("Listening on port %d\n", port);
@@ -236,7 +236,7 @@ int main(int argc, char** argv)
 	while(1) {
 		client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addr_size);
 		if (client_sock < 0) {
-			WARNING("Can not accept connection on port %d\n", port);
+			ERROR("Can not accept connection on port %d\n", port);
 			return 1;
 		}
 		DEBUG("Accepted connection on port %d\n", port);

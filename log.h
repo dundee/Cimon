@@ -1,21 +1,23 @@
 #ifndef _CIMON_LOG_H
 #define	_CIMON_LOG_H
 
-/*#define DEBUG_MODE 1*/
+#include "config.h"
 
 typedef enum {
 	DEBUG,
 	WARNING
 } MESSAGES;
 
-#if DEBUG_MODE
-# define DEBUG(msg, ...)  (void) mlog (msg, __VA_ARGS__)
+#ifdef DEBUG_MODE
+# define DEBUG(msg, ...)  print_warning (msg, __VA_ARGS__)
 #else
 # define DEBUG(msg, ...)  /* nope */
 #endif
 
-#define WARNING(msg, ...) mlog (msg, __VA_ARGS__)
+#define WARNING(msg, ...) print_warning (msg, __VA_ARGS__)
+#define ERROR(msg, ...)  print_error (msg, __VA_ARGS__)
 
-int mlog (char *msg, ...);
+void print_warning (char *msg, ...);
+void print_error (char *msg, ...);
 
 #endif

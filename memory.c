@@ -149,14 +149,14 @@ memory_info_t *memory_get_values()
 		exit(1);
 	}
 
-	fscanf(fp, "MemTotal: %u kB\n", &memory->total) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
-	fscanf(fp, "MemFree: %u kB\n", &memory->free) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
-	fscanf(fp, "Buffers: %u kB\n", &memory->buffers) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
-	fscanf(fp, "Cached: %u kB\n", &memory->cached) || WARNING("Cannot parse %s.\n", "/proc/meminfo");
+	if(!fscanf(fp, "MemTotal: %u kB\n", &memory->total)) WARNING("Cannot parse %s.\n", "/proc/meminfo");
+	if(!fscanf(fp, "MemFree: %u kB\n", &memory->free)) WARNING("Cannot parse %s.\n", "/proc/meminfo");
+	if(!fscanf(fp, "Buffers: %u kB\n", &memory->buffers)) WARNING("Cannot parse %s.\n", "/proc/meminfo");
+	if(!fscanf(fp, "Cached: %u kB\n", &memory->cached)) WARNING("Cannot parse %s.\n", "/proc/meminfo");
 	
 	memory->used = memory->total - memory->free - memory->buffers - memory->cached;
 
-	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/meminfo");
+	if(fclose(fp)) WARNING("Cannot close %s.\n", "/proc/meminfo");
 
 	DEBUG("memory: total %d\n", memory->total);
 	DEBUG("memory: free %d\n", memory->free);

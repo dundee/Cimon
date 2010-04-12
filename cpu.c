@@ -126,8 +126,8 @@ cpu_info_t *cpu_get_values()
 		exit(1);
 	}
 	
-	fscanf(fp, "%f", &cpu->load) || WARNING("Cannot parse %s.\n", "/proc/loadavg");
-	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/loadavg");
+	if(!fscanf(fp, "%f", &cpu->load)) WARNING("Cannot parse %s.\n", "/proc/loadavg");
+	if(fclose(fp)) WARNING("Cannot close %s.\n", "/proc/loadavg");
 
 	fp = fopen("/proc/stat", "r");
 	if (fp == NULL) {
@@ -135,10 +135,10 @@ cpu_info_t *cpu_get_values()
 		exit(1);
 	}
 	
-	fscanf(fp, "cpu %u", &cpu->user) || WARNING("Cannot parse %s.\n", "/proc/stat");
-	fscanf(fp, "%u", &cpu->nice) || WARNING("Cannot parse %s.\n", "/proc/stat");
-	fscanf(fp, "%u", &cpu->system) || WARNING("Cannot parse %s.\n", "/proc/stat");
-	fclose(fp) && WARNING("Cannot close %s.\n", "/proc/stat");
+	if(!fscanf(fp, "cpu %u", &cpu->user)) WARNING("Cannot parse %s.\n", "/proc/stat");
+	if(!fscanf(fp, "%u", &cpu->nice)) WARNING("Cannot parse %s.\n", "/proc/stat");
+	if(!fscanf(fp, "%u", &cpu->system)) WARNING("Cannot parse %s.\n", "/proc/stat");
+	if(fclose(fp)) WARNING("Cannot close %s.\n", "/proc/stat");
 	
 	DEBUG("cpu: load %f\n", cpu->load);
 	DEBUG("cpu: user %d\n", cpu->user);
