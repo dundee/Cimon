@@ -1,19 +1,30 @@
 CC		=	gcc
 CFLAGS	=	-Wall -pedantic -g -std=gnu99
 LDFLAGS	=	-lrrd_th
-
-#`pkg-config --libs --cflags gtk+-2.0 libglade-2.0`
+prefix	=	/usr
+sbindir	=	/usr/sbin
+srcdir	=	.
+datadir	=	/var/lib/cimon
 
 default: cimond cimon-graph cimon-web
 
-cimond: cimond.o memory.o cpu.o net.o log.o rrd.o
+cimond: $(srcdir)/cimond.o $(srcdir)/memory.o $(srcdir)/cpu.o $(srcdir)/net.o $(srcdir)/log.o $(srcdir)/rrd.o $(srcdir)/utils.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $?
 
-cimon-graph: cimon-graph.o memory.o cpu.o net.o log.o rrd.o
+cimon-graph: $(srcdir)/cimon-graph.o $(srcdir)/memory.o $(srcdir)/cpu.o $(srcdir)/net.o $(srcdir)/log.o $(srcdir)/rrd.o $(srcdir)/utils.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $?
 
-cimon-web: cimon-web.o memory.o cpu.o net.o log.o rrd.o render-index.o
+cimon-web: $(srcdir)/cimon-web.o $(srcdir)/memory.o $(srcdir)/cpu.o $(srcdir)/net.o $(srcdir)/log.o $(srcdir)/rrd.o $(srcdir)/utils.o $(srcdir)/render-index.o $(srcdir)/cache.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $?
 
-%.o : %.c %.h
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f cimond *.o
+	rm -f cimond cimon-graph cimon-web $(srcdir)/*.o
+	
+install:
+	install -Dm744 cimond $(prefix)$(sbindir)/cimond
+	install -Dm744 cimon-graph $(prefix)$(sbindir)/cimon-graph
+	install -Dm744 cimon-web $(prefix)$(sbindir)/cimon-web
+	install -d $(prefix)$(datadir)
