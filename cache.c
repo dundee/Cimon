@@ -45,7 +45,7 @@ int cache_is_valid(char *key)
 	now = time(NULL);
 	
 	if (now > cache[i]->created + cache[i]->expiration) { /* expired */
-		DEBUG("Cache key '%s' found but expired\n", key);
+		DEBUG("Cache key '%s' found but expired (now is %d, cache is from %d and expires in %d)\n", key, now, cache[i]->created, cache[i]->expiration);
 		return 0;
 	} else {
 		DEBUG("Cache key '%s' found and valid\n", key);
