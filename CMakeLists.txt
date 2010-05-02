@@ -4,6 +4,7 @@ project (Cimon)
 set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 
 set(DATA_DIR "\"/var/lib/cimon\"" CACHE PATH "Where databases and images should be stored")
+set(REFRESH_GRAPH_INTERVAL 600 CACHE STRING "How often in seconds will be graphs refreshed")
 
 configure_file("config.h.cmake" "${CMAKE_SOURCE_DIR}/config.h")
 option(DEBUG_MODE "Enable verbose mode" OFF)
