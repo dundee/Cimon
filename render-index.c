@@ -44,8 +44,9 @@ function showTab() {\n\
 }\n\
 \n\
 $(document).ready(function(){\n\
-	$('#graphs').hide();\n\
+	$('.tab').hide();\n\
 	$('#menu li a').click(showTab);\n\
+	$('#menu-graphs').click();\n\
 });\n\
 </script>\n\
 <style type=\"text/css\">\n\
@@ -104,8 +105,8 @@ table td {\n\
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "<h1>Cimon - Load statistics</h1>\n");
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "<ul id=\"menu\">\n\
-	<li><a href=\"#actual\">Actual</a></li>\n\
-	<li><a href=\"#graphs\">Graphs</a></li>\n\
+	<li><a id=\"menu-actual\" href=\"#actual\">Actual</a></li>\n\
+	<li><a id=\"menu-graphs\" href=\"#graphs\">Graphs</a></li>\n\
 </ul>\n");
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "<div id=\"actual\" class=\"tab\">\n");
