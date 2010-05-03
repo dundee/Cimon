@@ -5,6 +5,8 @@
 
 #define REFRESH_GRAPH_INTERVAL @REFRESH_GRAPH_INTERVAL@
 
+#define PORT @PORT@
+
 #cmakedefine DEBUG_MODE
 
 #endif /* config.h */

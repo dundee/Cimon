@@ -12,6 +12,7 @@
 #include "utils.h"
 #include "render-index.h"
 #include "cache.h"
+#include "web.h"
 
 #define BUFF_SIZE 1024
 
@@ -171,6 +172,7 @@ void close_sockets()
 	
 	shutdown(server_sock, SHUT_RDWR);
 	close(server_sock);
+	exit(0);
 }
 
 void no_action()
@@ -178,9 +180,8 @@ void no_action()
 	WARNING("%s\n", "Ignoring SIGPIPE");
 }
 
-int main(int argc, char** argv)
+int start_web_server(unsigned int port)
 {
-	unsigned int port;
 	struct sockaddr_in server_addr;
 	struct sockaddr_in client_addr;
 	int server_sock;
@@ -201,10 +202,6 @@ int main(int argc, char** argv)
 	sigaction(SIGINT,  &action_close_sock, NULL);
 	sigaction(SIGTERM, &action_close_sock, NULL);
 	sigaction(SIGPIPE, &action_no_action, NULL);
-	atexit(close_sockets);
-	
-	if (argc >= 2) sscanf(argv[1], "%u", &port);
-	else port = 80;
 	
 	server_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); /* TCP */
 	if (server_sock < 0) {

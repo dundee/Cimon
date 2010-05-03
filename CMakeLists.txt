@@ -5,6 +5,7 @@ set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 
 set(DATA_DIR "\"/var/lib/cimon\"" CACHE PATH "Where databases and images should be stored")
 set(REFRESH_GRAPH_INTERVAL 600 CACHE STRING "How often in seconds will be graphs refreshed")
+set(PORT 8080 CACHE STRING "Port for HTTP server")
 
 configure_file("config.h.cmake" "${CMAKE_SOURCE_DIR}/config.h")
 option(DEBUG_MODE "Enable verbose mode" OFF)
@@ -20,12 +21,10 @@ if(NOT UNIX)
 	MESSAGE(FATAL_ERROR "Only UNIX systems are supported.")
 endif(NOT UNIX)
 
-set(PROGRAMS cimond cimon-graph cimon-web)
+set(PROGRAMS cimond)
 set(CORELIBS rrd_th)
 
-add_executable(cimond cimond.c memory.c cpu.c net.c log.c rrd.c utils.c)
-add_executable(cimon-graph cimon-graph.c memory.c cpu.c net.c log.c rrd.c utils.c)
-add_executable(cimon-web cimon-web.c memory.c cpu.c net.c log.c rrd.c utils.c render-index.c cache.c)
+add_executable(cimond cimond.c memory.c cpu.c net.c log.c rrd.c utils.c web.c cache.c render-index.c)
 
 foreach(program ${PROGRAMS})
     target_link_libraries(${program} ${CORELIBS})

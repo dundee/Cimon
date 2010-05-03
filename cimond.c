@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <signal.h>
 
+#include "web.h"
 #include "log.h"
 #include "config.h"
 #include "memory.h"
@@ -11,7 +12,7 @@
 
 #define STEP 60
 
-pthread_t threads[3];
+pthread_t threads[5];
 
 typedef struct {
 	void (*func)(char *);
@@ -28,6 +29,27 @@ static void *update_loop(void *arg)
 		params->func(params->datadir);
 		sleep(STEP);
 	}
+	return NULL;
+}
+
+static void *graph_loop(void *arg)
+{
+	while (1) {
+		DEBUG("Creating graph for %s monitor\n", "memory");
+		memory_create_graph(DATA_DIR);
+		DEBUG("Creating graph for %s monitor\n", "cpu");
+		cpu_create_graph(DATA_DIR);
+		DEBUG("Creating graph for %s monitor\n", "network");
+		net_create_graph(DATA_DIR);
+		
+		sleep(REFRESH_GRAPH_INTERVAL);
+	}
+	return NULL;
+}
+
+static void *web_thread(void *arg)
+{
+	start_web_server(PORT);
 	return NULL;
 }
 
@@ -49,8 +71,12 @@ int main(int argc, char** argv)
 	if(pthread_create(&threads[1], NULL, update_loop, (void *) &params[1])) ERROR("Thread %d cannot be started\n", 1);
 	DEBUG("Starting thread for %s monitor\n", "network");
 	if(pthread_create(&threads[2], NULL, update_loop, (void *) &params[2])) ERROR("Thread %d cannot be started\n", 2);
+	DEBUG("Starting thread for %s refreshing\n", "graph");
+	if(pthread_create(&threads[3], NULL, graph_loop, NULL)) ERROR("Thread %d cannot be started\n", 3);
+	DEBUG("Starting thread for %s server\n", "web");
+	if(pthread_create(&threads[4], NULL, web_thread, NULL)) ERROR("Thread %d cannot be started\n", 4);
 	
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < 5; i++) {
 		pthread_join(threads[i], NULL);
 	}
 	
