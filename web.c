@@ -155,6 +155,9 @@ static void handle_request(int client_sock)
 	} else if (!strcmp(request, "/net.png")) {
 		DEBUG("Sending file: %s\n", request);
 		response_file(client_sock, "net.png");
+	} else if (!strcmp(request, "/swap.png")) {
+		DEBUG("Sending file: %s\n", request);
+		response_file(client_sock, "swap.png");
 	} else {
 		DEBUG("Request unknown: %s\n", request);
 		response_404(client_sock);

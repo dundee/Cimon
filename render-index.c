@@ -7,6 +7,7 @@
 #include "memory.h"
 #include "cpu.h"
 #include "net.h"
+#include "swap.h"
 
 char * render_index()
 {
@@ -14,12 +15,14 @@ char * render_index()
 	memory_info_t *memory;
 	cpu_info_t *cpu;
 	net_info_t *net;
+	swap_info_t *swap;
 	
 	buffer = tmp = (char *) malloc(sizeof(char) * BUFF_SIZE);
 	
 	memory = memory_get_values();
 	cpu    = cpu_get_values();
 	net    = net_get_values();
+	swap   = swap_get_values();
 	
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n\
@@ -132,6 +135,15 @@ table td {\n\
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t</div>\n");
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t<div class=\"info\">\n");
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<h2>Swap</h2>\n");
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<table>\n");
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Free:</td><td>%u MB</td></tr>\n", swap->free/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Used:</td><td>%u MB</td></tr>\n", swap->used/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Total:</td><td>%u MB</td></tr>\n", swap->total/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t</table>\n");
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t</div>\n");
+	
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t<div class=\"info\">\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<h2>Network</h2>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<table>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Download:</td><td>%u</td></tr>\n", net->download);
@@ -144,6 +156,7 @@ table td {\n\
 	
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "<div id=\"graphs\" class=\"tab\">\n\
 	<p><img src=\"./memory.png\" /></p>\n\
+	<p><img src=\"./swap.png\" /></p>\n\
 	<p><img src=\"./cpu.png\" /></p>\n\
 	<p><img src=\"./net.png\" /></p>\n\
 	<div class=\"cleaner\"></div>\n\
@@ -156,6 +169,7 @@ table td {\n\
 	free(memory);
 	free(cpu);
 	free(net);
+	free(swap);
 	
 	DEBUG("Structures for %s freed\n", "memory, cpu, net");
 	
