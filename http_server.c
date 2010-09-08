@@ -80,6 +80,24 @@ static void response_file(page_t *page, char *file)
 	free(filename);
 }
 
+void request_completed (void *cls, 
+                        struct MHD_Connection *connection, 
+                        void **con_cls,
+                        enum MHD_RequestTerminationCode toe)
+{
+	page_t *page = (page_t*) *con_cls;
+	
+	DEBUG("Request %s\n", "completed");
+
+	if (NULL == page) return;
+	
+	DEBUG("%s...\n", "cleaning");
+
+	free(page->data);
+	free(page);
+	*con_cls = NULL;
+}
+
 static int handle_request(void * cls,
                    struct MHD_Connection * connection,
                    const char * url,
@@ -89,39 +107,40 @@ static int handle_request(void * cls,
                    size_t * upload_data_size,
                    void ** ptr)
 {
-	static int dummy;
 	struct MHD_Response * response;
 	int ret;
 	int isfile = 0;
-	page_t page;
+	static page_t *page;
 	
 	if (0 != strcmp(method, "GET")) return MHD_NO; /* unexpected method */
-	if (&dummy != *ptr) { // first round only headers
-		*ptr = &dummy;
+	if (NULL == *ptr) { // first round
+		page = (page_t *) malloc(sizeof(page_t));
+		page->length = 0;
+		page->data   = NULL;
+		
+		*ptr = (void*) page;
 		return MHD_YES;
 	}
 	
 	if (0 != *upload_data_size) return MHD_NO; /* upload data in a GET!? */
 	
-	*ptr = NULL; /* clear context pointer */
-	
 	if (!strcmp(url, "/")) {
 		DEBUG("Sending page: %s\n", url);
-		response_page(&page, "index");
+		response_page(page, "index");
 	} else if (!strcmp(url, "/memory.png")) {
 		DEBUG("Sending file: %s\n", url);
-		response_file(&page, "memory.png");
+		response_file(page, "memory.png");
 	} else if (!strcmp(url, "/cpu.png")) {
 		DEBUG("Sending file: %s\n", url);
-		response_file(&page, "cpu.png");
+		response_file(page, "cpu.png");
 		isfile = 1;
 	} else if (!strcmp(url, "/net.png")) {
 		DEBUG("Sending file: %s\n", url);
-		response_file(&page, "net.png");
+		response_file(page, "net.png");
 		isfile = 1;
 	} else if (!strcmp(url, "/swap.png")) {
 		DEBUG("Sending file: %s\n", url);
-		response_file(&page, "swap.png");
+		response_file(page, "swap.png");
 		isfile = 1;
 	} else {
 		DEBUG("Request unknown: %s\n", url);
@@ -129,12 +148,13 @@ static int handle_request(void * cls,
 	}
 	
 	
-	response = MHD_create_response_from_data(page.length,
-	                                         (void*) page.data,
+	response = MHD_create_response_from_data(page->length,
+	                                         (void*) page->data,
 	                                         MHD_NO,
 	                                         MHD_NO);
 	
 	if (isfile) MHD_add_response_header (response, "Content-type", "image/png");
+	else MHD_add_response_header(response, "Content-Type", "text/html; charset=utf-8");
 	
 	ret = MHD_queue_response(connection,
 	                         MHD_HTTP_OK,
@@ -150,6 +170,9 @@ int http_server_run(int port)
 	                     NULL,
 	                     NULL,
 	                     &handle_request,
+	                     NULL,
+	                     MHD_OPTION_NOTIFY_COMPLETED,
+	                     request_completed, 
 	                     NULL,
 	                     MHD_OPTION_END);
 	if (d == NULL) {
