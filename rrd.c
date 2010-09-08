@@ -41,13 +41,15 @@ int rrd_update_db(char * dir, char * name, int argc, char * argv[])
 
 int rrd_create_graph(char * dir, char * name, int argc, char * argv[])
 {
+	rrd_info_t *info;
 	char *filename;
 	
 	filename = compose_filename(dir, name);
 	argv[1] = filename;
 	
 	DEBUG("Updating graph: %s\n", argv[1]);
-	rrd_graph_v(argc, argv);
+	info = rrd_graph_v(argc, argv);
+	rrd_info_free(info);
 	
 	if (rrd_test_error()) WARNING("RRD error: %s\n", rrd_get_error());
 	
