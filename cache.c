@@ -66,13 +66,20 @@ void cache_set_content(char *key, char *value, int expiration)
 {
 	int i;
 	
-	i = cache_size++;
-	
-	cache[i] = (cache_record_t *) malloc(sizeof(cache_record_t));
-	memset(cache[i], 0, sizeof(cache_record_t));
-	
-	cache[i]->key        = strdup(key);
-	cache[i]->value      = strdup(value);
-	cache[i]->created    = time(NULL);
-	cache[i]->expiration = expiration;
+	i = get_key_number(key);
+	if (i != -1) { /* already in cache */
+		cache[i]->value      = strdup(value);
+		cache[i]->created    = time(NULL);
+		cache[i]->expiration = expiration;
+	} else {
+		i = cache_size++;
+		
+		cache[i] = (cache_record_t *) malloc(sizeof(cache_record_t));
+		memset(cache[i], 0, sizeof(cache_record_t));
+		
+		cache[i]->key        = strdup(key);
+		cache[i]->value      = strdup(value);
+		cache[i]->created    = time(NULL);
+		cache[i]->expiration = expiration;
+	}
 }
