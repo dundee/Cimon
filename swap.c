@@ -79,9 +79,9 @@ void swap_create_graph(char * datadir)
 		"COMMENT:             Average   Maximum   Minimum\\l",
 
 		"AREA:used#F00:Used   :STACK",
-		"GPRINT:freeavg:%7.2lfM",
-		"GPRINT:freemax:%7.2lfM",
-		"GPRINT:freemin:%7.2lfM\\l",
+		"GPRINT:usedavg:%7.2lfM",
+		"GPRINT:usedmax:%7.2lfM",
+		"GPRINT:usedmin:%7.2lfM\\l",
 
 		"LINE2:total#000:Total  ",
 		"GPRINT:totalavg:%7.2lfM",
