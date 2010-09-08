@@ -26,9 +26,9 @@ if(NOT UNIX)
 endif(NOT UNIX)
 
 set(PROGRAMS cimond)
-set(CORELIBS rrd_th)
+set(CORELIBS rrd_th microhttpd)
 
-add_executable(cimond cimond.c memory.c cpu.c net.c swap.c log.c rrd.c utils.c web.c cache.c render-index.c)
+add_executable(cimond cimond.c memory.c cpu.c net.c swap.c log.c rrd.c utils.c http_server.c cache.c render-index.c)
 
 foreach(program ${PROGRAMS})
     target_link_libraries(${program} ${CORELIBS})

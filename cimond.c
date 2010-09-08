@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-#include "web.h"
+#include "http_server.h"
 #include "log.h"
 #include "config.h"
 #include "memory.h"
@@ -52,7 +52,7 @@ static void *graph_loop(void *arg)
 
 static void *web_thread(void *arg)
 {
-	start_web_server(PORT);
+	http_server_run(PORT);
 	return NULL;
 }
 
