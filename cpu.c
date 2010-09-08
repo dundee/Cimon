@@ -110,6 +110,7 @@ void cpu_create_graph(char * datadir)
 	
 	if (!rrd_db_exists(datadir, "cpu.rrd")) cpu_create_rrd(datadir);
 	rrd_create_graph(datadir, "cpu.png", sizeof(params) / sizeof(char *), params);
+	free(rrd_path);
 }
 
 cpu_info_t *cpu_get_values()

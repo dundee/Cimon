@@ -77,6 +77,7 @@ static void response_file(page_t *page, char *file)
 	
 	page->length = length;
 	page->data = buff;
+	free(filename);
 }
 
 static int handle_request(void * cls,

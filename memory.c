@@ -132,6 +132,7 @@ void memory_create_graph(char * datadir)
 	
 	if (!rrd_db_exists(datadir, "memory.rrd")) memory_create_rrd(datadir);
 	rrd_create_graph(datadir, "memory.png", sizeof(params) / sizeof(char *), params);
+	free(rrd_path);
 }
 
 memory_info_t *memory_get_values()

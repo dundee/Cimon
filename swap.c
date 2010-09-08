@@ -101,6 +101,7 @@ void swap_create_graph(char * datadir)
 	
 	if (!rrd_db_exists(datadir, "swap.rrd")) swap_create_rrd(datadir);
 	rrd_create_graph(datadir, "swap.png", sizeof(params) / sizeof(char *), params);
+	free(rrd_path);
 }
 
 swap_info_t *swap_get_values()

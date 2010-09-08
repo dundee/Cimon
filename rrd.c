@@ -51,6 +51,8 @@ int rrd_create_graph(char * dir, char * name, int argc, char * argv[])
 	
 	if (rrd_test_error()) WARNING("RRD error: %s\n", rrd_get_error());
 	
+	free(filename);
+	
 	return 1;
 }
 

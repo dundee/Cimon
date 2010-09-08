@@ -77,6 +77,7 @@ void net_create_graph(char * datadir)
 	
 	if (!rrd_db_exists(datadir, "net.rrd")) net_create_rrd(datadir);
 	rrd_create_graph(datadir, "net.png", sizeof(params) / sizeof(char *), params);
+	free(rrd_path);
 }
 
 net_info_t *net_get_values()
