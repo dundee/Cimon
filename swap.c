@@ -111,6 +111,7 @@ swap_info_t *swap_get_values()
 	char *buff, *tmp;
 	
 	buff = (char *) malloc(2048 * sizeof(char));
+	memset(buff, 0, 2048);
 	
 	swap = (swap_info_t *) malloc(sizeof(swap_info_t));
 	memset(swap, 0, sizeof(swap_info_t));
