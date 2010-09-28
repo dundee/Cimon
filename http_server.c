@@ -110,9 +110,10 @@ static int handle_request(void * cls,
 	struct MHD_Response * response;
 	int ret;
 	int isfile = 0;
-	static page_t *page;
+	page_t *page = NULL;
 	
 	if (0 != strcmp(method, "GET")) return MHD_NO; /* unexpected method */
+	
 	if (NULL == *ptr) { // first round
 		page = (page_t *) malloc(sizeof(page_t));
 		page->length = 0;
@@ -120,6 +121,8 @@ static int handle_request(void * cls,
 		
 		*ptr = (void*) page;
 		return MHD_YES;
+	} else {
+		page = (void*) *ptr;
 	}
 	
 	if (0 != *upload_data_size) return MHD_NO; /* upload data in a GET!? */
