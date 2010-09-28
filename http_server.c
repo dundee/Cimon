@@ -151,7 +151,7 @@ static int handle_request(void * cls,
 	response = MHD_create_response_from_data(page->length,
 	                                         (void*) page->data,
 	                                         MHD_NO,
-	                                         MHD_NO);
+	                                         MHD_YES);
 	
 	if (isfile) MHD_add_response_header (response, "Content-type", "image/png");
 	else MHD_add_response_header(response, "Content-Type", "text/html; charset=utf-8");
