@@ -6,12 +6,10 @@ set(CPACK_PACKAGE_CONTACT "Daniel Milde <info@milde.cz>")
 
 set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 
-set(DATA_DIR "/var/lib/cimon" CACHE PATH "Where databases and images should be stored")
-set(REFRESH_GRAPH_INTERVAL 600 CACHE STRING "How often in seconds will be graphs refreshed")
-set(PORT 8080 CACHE STRING "Port for HTTP server")
+add_subdirectory(tests)
 
 configure_file("config.h.cmake" "${CMAKE_SOURCE_DIR}/config.h")
-option(START_WEBSERVER "Start own webserver" ON)
+set(CONFIG_FILE "/etc/cimon.conf" CACHE FILEPATH "Where configuration should be stored")
 option(DEBUG_MODE "Enable verbose mode" ON)
 
 find_library(RRD_LIB NAMES "rrd_th")
@@ -27,13 +25,13 @@ endif(NOT UNIX)
 
 set(PROGRAMS cimond)
 set(CORELIBS rrd_th microhttpd)
+set(SOURCES cimond.c memory.c cpu.c net.c swap.c log.c rrd.c utils.c http_server.c cache.c render_index.c config_reader.c)
 
-add_executable(cimond cimond.c memory.c cpu.c net.c swap.c log.c rrd.c utils.c http_server.c cache.c render-index.c)
+add_executable(cimond ${SOURCES})
+add_library(cimonlib SHARED ${SOURCES})
 
 foreach(program ${PROGRAMS})
     target_link_libraries(${program} ${CORELIBS})
 endforeach(program)
 
 install(TARGETS cimond RUNTIME DESTINATION "/usr/sbin/")
-file(MAKE_DIRECTORY ${DATA_DIR})
-
