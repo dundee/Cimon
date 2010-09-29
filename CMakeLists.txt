@@ -6,6 +6,7 @@ set(CPACK_PACKAGE_CONTACT "Daniel Milde <info@milde.cz>")
 
 set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 
+add_subdirectory(tests)
 
 configure_file("config.h.cmake" "${CMAKE_SOURCE_DIR}/config.h")
 set(CONFIG_FILE "/etc/cimon.conf" CACHE FILEPATH "Where configuration should be stored")
