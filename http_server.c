@@ -13,7 +13,7 @@
 #include "config_reader.h"
 #include "log.h"
 #include "utils.h"
-#include "render-index.h"
+#include "render_index.h"
 #include "cache.h"
 #include "http_server.h"
 
