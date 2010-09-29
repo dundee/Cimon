@@ -10,6 +10,7 @@
 #include <microhttpd.h>
 
 #include "config.h"
+#include "config_reader.h"
 #include "log.h"
 #include "utils.h"
 #include "render-index.h"
@@ -48,8 +49,11 @@ static void response_file(page_t *page, char *file)
 	unsigned length;
 	char *filename;
 	FILE *fp;
+	configuration_t *config;
 	
-	filename = compose_filename(DATA_DIR, file);
+	config = get_config();
+	
+	filename = compose_filename(config->data_dir, file);
 	
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
