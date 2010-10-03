@@ -8,8 +8,8 @@ set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 
 add_subdirectory(tests)
 
-configure_file("config.h.cmake" "${CMAKE_SOURCE_DIR}/config.h")
 set(CONFIG_FILE "/etc/cimon.conf" CACHE FILEPATH "Where configuration should be stored")
+configure_file("config.h.cmake" "${CMAKE_SOURCE_DIR}/config.h")
 option(DEBUG_MODE "Enable verbose mode" ON)
 
 find_library(RRD_LIB NAMES "rrd_th")
