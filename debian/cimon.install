@@ -1,0 +1,2 @@
+cimon.conf /etc
+cimond /usr/sbin

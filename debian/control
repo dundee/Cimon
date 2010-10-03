@@ -1,0 +1,21 @@
+Source: cimon
+Section: utils
+Priority: extra
+Maintainer: Daniel Milde <info@milde.cz>
+Build-Depends: debhelper (>= 7),
+               cmake,
+               cdbs,
+               pkg-config,
+               gnome-pkg-tools,
+               docbook-to-man
+Standards-Version: 3.8.0
+
+Package: cimon
+Architecture: any
+Depends: libc6,
+         librrd4,
+         libmicrohttpd4
+Description: Lightweight load monitor
+ Cimon is a lightweight load monitor 
+ which collects cpu, memory and net usages 
+ and then draws graphs.

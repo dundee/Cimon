@@ -1,0 +1,6 @@
+Cimon for Debian
+----------------
+
+Cimon is a lightweight load monitor which collects cpu, memory and net usages and then draws graphs.
+
+ -- Daniel Milde <info@milde.cz>  Sun, 09 Aug 2009 19:59:52 +0200
