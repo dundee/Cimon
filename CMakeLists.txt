@@ -1,8 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 project (cimon)
 set(CPACK_PACKAGE_CONTACT "Daniel Milde <info@milde.cz>")
-#set(CPACK_GENERATOR "TGZ;DEB")
-#include(CPack)
 
 set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 
@@ -33,5 +31,3 @@ add_library(cimonlib SHARED ${SOURCES})
 foreach(program ${PROGRAMS})
     target_link_libraries(${program} ${CORELIBS})
 endforeach(program)
-
-install(TARGETS cimond RUNTIME DESTINATION "/usr/sbin/")
