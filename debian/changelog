@@ -1,3 +1,9 @@
+cimon (0.4.0-2) stable; urgency=low
+
+  * fixed init script
+  
+ -- Daniel Milde <info@milde.cz>  Mon, 04 Oct 2010 00:20:11 +0200
+
 cimon (0.4.0-1) stable; urgency=low
 
   * SWAP monitoring

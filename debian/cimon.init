@@ -80,6 +80,7 @@ case "$1" in
         fi
         start-stop-daemon --start --make-pidfile --background \
                           --pidfile $PIDFILE  --exec $DAEMON -- $DAEMON_OPTS
+        sleep 1
         if ! running ; then
             echo "ERROR"
         else
