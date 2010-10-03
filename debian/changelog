@@ -1,3 +1,12 @@
+cimon (0.4.0-1) stable; urgency=low
+
+  * SWAP monitoring
+  * use library Microhttpd
+  * read configuration from file
+  * Cunit unit tests
+  
+ -- Daniel Milde <info@milde.cz>  Sun, 03 Oct 2010 23:56:31 +0200
+
 cimon (0.3.0-1) stable; urgency=low
 
   * Initial release
