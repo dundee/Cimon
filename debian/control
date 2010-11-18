@@ -4,6 +4,9 @@ Priority: extra
 Maintainer: Daniel Milde <info@milde.cz>
 Build-Depends: debhelper (>= 7),
                cmake,
+               libcunit1-dev,
+               librrd-dev,
+               libmicrohttpd-dev,
                cdbs,
                pkg-config,
                gnome-pkg-tools,
