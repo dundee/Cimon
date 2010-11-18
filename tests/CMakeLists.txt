@@ -3,7 +3,6 @@ project (Cimon)
 
 set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -pedantic")
 
-
 find_library(CUNIT_LIB NAMES "cunit")
 if (NOT CUNIT_LIB)
 	MESSAGE(FATAL_ERROR "Cunit library not found.")
