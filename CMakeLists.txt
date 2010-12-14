@@ -21,7 +21,7 @@ if(NOT UNIX)
 	MESSAGE(FATAL_ERROR "Only UNIX systems are supported.")
 endif(NOT UNIX)
 
-set(PROGRAMS cimond)
+set(PROGRAMS cimond cimonlib)
 set(CORELIBS rrd_th microhttpd)
 set(SOURCES cimond.c memory.c cpu.c net.c swap.c log.c rrd.c utils.c http_server.c cache.c render_index.c config_reader.c)
 
