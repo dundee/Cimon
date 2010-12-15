@@ -137,9 +137,9 @@ table td {\n\
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t<div class=\"info\">\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<h2>Swap</h2>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t<table>\n");
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Free:</td><td>%u MB</td></tr>\n", swap->free/1000);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Used:</td><td>%u MB</td></tr>\n", swap->used/1000);
-	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Total:</td><td>%u MB</td></tr>\n", swap->total/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Free swap:</td><td>%u MB</td></tr>\n", swap->free/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Used swap:</td><td>%u MB</td></tr>\n", swap->used/1000);
+	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t\t<tr><td>Total swap:</td><td>%u MB</td></tr>\n", swap->total/1000);
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t\t</table>\n");
 	tmp += snprintf(tmp, BUFF_SIZE-(tmp-buffer), "\t</div>\n");
 	
